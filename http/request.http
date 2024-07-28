@@ -1,0 +1,16 @@
+# Extension id: anweber.vscode-httpyac
+@host = http://localhost:3000/
+
+###
+POST {{host}}login
+{
+    "username": "llius123",
+    "password": "1234"
+}
+
+###
+POST {{host}}loginV2
+{
+    "username": "llius123",
+    "password": "1234"
+}
