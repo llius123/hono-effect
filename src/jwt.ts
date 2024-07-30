@@ -2,6 +2,14 @@ import { Effect } from "effect";
 import * as jwt from "jsonwebtoken";
 const key = "KEY";
 
-export const signJwt = (username: string) => {
-  return Effect.succeed(jwt.sign({ username }, key, { expiresIn: "1h" }));
+export const signJwt = (
+  username: string
+): Effect.Effect<string, never, never> => {
+  const program = Effect.gen(function* () {
+    yield* Effect.log("signJwt");
+
+    return Effect.succeed(jwt.sign({ username }, key, { expiresIn: "1h" }));
+  });
+
+  return Effect.runSync(program);
 };

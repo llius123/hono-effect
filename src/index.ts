@@ -45,33 +45,36 @@ const getUserFromDatabase = (
 app.post("/loginV2", async (c) => {
   const { username, password } = await c.req.json();
 
-  const program = Effect.log("start").pipe(
-    Effect.andThen(getUserFromDatabaseV2(username, password)),
-    // Effect.andThen(Effect.log("getUserFromDatabaseV2")),
-    Effect.andThen(signJwt(username))
-    // Effect.andThen(Effect.log("signJwt")),
-    // Effect.andThen(Effect.log("done"))
+  const program = Effect.gen(function* () {
+    yield* Effect.log("loginV2 start");
+    yield* getUserFromDatabaseV2(username, password);
+    const jwt = yield* signJwt(username);
+    yield* Effect.log("loginV2 end");
+    return jwt;
+  });
+  return Effect.runPromise(program).then(
+    (success) => c.json({ message: "Hello Hono!" }),
+    (error) => c.json({ message: "Error" })
   );
-  Effect.runSync(program);
-
-  // Effect.runFork(program).pipe((user) => console.log(user.));
-
-  return c.json({ message: "Hello Hono!" });
 });
 
 const getUserFromDatabaseV2 = (
   username: string,
   password: string
 ): Effect.Effect<UserDTO, Error> => {
-  const user = Data.array(usersDTBO).find(
-    (user) => user.username === username && user.password === password
-  );
-  return Effect.if(user !== undefined, {
-    onTrue: () => Effect.succeed(user as UserDTO),
-    onFalse: () => Effect.fail(new Error("User not found")),
-  });
+  return Effect.gen(function* () {
+    yield* Effect.log("getUserFromDatabaseV2");
+    const user = Data.array(usersDTBO).find(
+      (user) => user.username === username && user.password === password
+    );
 
-  // Effect.runSync(user).then(console.log);
+    const program = Effect.if(user !== undefined, {
+      onTrue: () => Effect.succeed(user as UserDTO),
+      onFalse: () => Effect.fail(new Error("User not found")),
+    });
+
+    return Effect.runSync(program);
+  });
 };
 
 export default app;
