@@ -7,10 +7,3 @@ POST {{host}}login
     "username": "llius123",
     "password": "1234"
 }
-
-###
-POST {{host}}loginV2
-{
-    "username": "llius123",
-    "password": "1234"
-}
