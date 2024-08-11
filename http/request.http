@@ -8,3 +8,13 @@ Content-Type: application/json
     "username": "llius123",
     "password": "1234"
 }
+
+
+POST {{host}}register
+Content-Type: application/json
+{
+    "username": "qwe",
+    "password": "1234",
+    "password_repeated": "1234",
+    "email": "email@email.com"
+}

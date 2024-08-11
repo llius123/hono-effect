@@ -4,13 +4,12 @@ import fs from "node:fs";
 const DB_PATH = "db/user.json";
 
 export const getUserFromDatabaseV2 = (username: string, password: string) => {
-  const program = Effect.gen(function* () {
+  return Effect.gen(function* () {
     yield* Effect.log("getUserFromDatabaseV2");
     const allUsers = yield* getAllUsersFromDB();
     const userOnDB = yield* filterUser(allUsers, username, password);
     return userOnDB;
   });
-  return program;
 };
 
 const getAllUsersFromDB = () =>

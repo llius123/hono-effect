@@ -1,13 +1,13 @@
 import { Context, Hono } from "hono";
 import { BlankEnv, BlankSchema, Env } from "hono/types";
-import { login } from "../../application/login";
+import login from "../../application";
 import { z } from "zod";
 import { password } from "bun";
 import { validator } from "hono/validator";
 import { zValidator } from "@hono/zod-validator";
 import { Effect } from "effect";
 
-export const loginAPI = async (app: Hono<BlankEnv, BlankSchema, "/">) => {
+export default async (app: Hono<BlankEnv, BlankSchema, "/">) => {
   app.post(
     "/login",
     zValidator("json", schema, (result, c) => {
@@ -19,15 +19,23 @@ export const loginAPI = async (app: Hono<BlankEnv, BlankSchema, "/">) => {
       );
     }),
     async (c) => {
-      const { username, password } = await c.req.json();
+      const { username, password } = (await c.req.json()) as UserDTO;
 
-      const user = login(username, password);
+      const program = login(username, password).pipe(
+        Effect.catchTags({
+          ErrorDB: (error) => Effect.fail("ErrorDB"),
+          ErrorLogin: (error) => Effect.fail("ErrorLogin"),
+        })
+      );
 
-      return c.json({ token: user }, 200);
+      return Effect.runPromise(program).then(
+        (result) => c.json({ success: result }, 200),
+        (error) => c.json({ error: error.message }, 400)
+      );
     }
   );
 };
-const schema = z.object({
+const schema: z.ZodType<UserDTO> = z.object({
   username: z.string(),
   password: z.string(),
 });
